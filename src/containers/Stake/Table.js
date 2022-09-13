@@ -10,8 +10,9 @@ import DelegateButton from './DelegateButton';
 import { formatCount } from '../../utils/numberFormats';
 import ValidatorName from './ValidatorName';
 import { config } from '../../config';
-import ConnectButton from '../NavBar/ConnectButton';
 import classNames from 'classnames';
+import { Button } from '@material-ui/core';
+import { showConnectDialog } from '../../actions/navBar';
 
 class Table extends Component {
     render () {
@@ -31,7 +32,11 @@ class Table extends Component {
                     noMatch: this.props.inProgress
                         ? <CircularProgress/>
                         : !this.props.address
-                            ? <ConnectButton/>
+                            ? <Button
+                                className="disconnect_button"
+                                onClick={() => this.props.showConnectDialog()}>
+                                Connect
+                            </Button>
                             : <div className="no_data_table"> No data found </div>,
                     toolTip: 'Sort',
                 },
@@ -131,8 +136,11 @@ class Table extends Component {
         }]
         ;
 
-        const dataToMap = this.props.active === 2 ? this.props.delegatedValidatorList
-            : this.props.validatorList;
+        const dataToMap = this.props.active === 2
+            ? this.props.delegatedValidatorList
+            : this.props.active === 3
+                ? this.props.inActiveValidators
+                : this.props.validatorList;
 
         const tableData = dataToMap && dataToMap.length
             ? dataToMap.map((item) =>
@@ -164,6 +172,7 @@ Table.propTypes = {
     active: PropTypes.number.isRequired,
     inProgress: PropTypes.bool.isRequired,
     lang: PropTypes.string.isRequired,
+    showConnectDialog: PropTypes.func.isRequired,
     address: PropTypes.string,
     delegatedValidatorList: PropTypes.arrayOf(
         PropTypes.shape({
@@ -191,6 +200,22 @@ Table.propTypes = {
         }),
     ),
     home: PropTypes.bool,
+    inActiveValidators: PropTypes.arrayOf(
+        PropTypes.shape({
+            operator_address: PropTypes.string,
+            status: PropTypes.number,
+            tokens: PropTypes.string,
+            commission: PropTypes.shape({
+                commission_rates: PropTypes.shape({
+                    rate: PropTypes.string,
+                }),
+            }),
+            delegator_shares: PropTypes.string,
+            description: PropTypes.shape({
+                moniker: PropTypes.string,
+            }),
+        }),
+    ),
     validatorList: PropTypes.arrayOf(
         PropTypes.shape({
             operator_address: PropTypes.string,
@@ -217,7 +242,12 @@ const stateToProps = (state) => {
         inProgress: state.stake.validators.inProgress,
         delegations: state.accounts.delegations.result,
         delegatedValidatorList: state.stake.delegatedValidators.list,
+        inActiveValidators: state.stake.inActiveValidators.list,
     };
 };
 
-export default connect(stateToProps)(Table);
+const actionToProps = {
+    showConnectDialog,
+};
+
+export default connect(stateToProps, actionToProps)(Table);

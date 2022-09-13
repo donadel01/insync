@@ -18,10 +18,11 @@ const ValidatorSelectField = (props) => {
         props.onChange(value);
     };
 
-    let validatorList = props.validatorList;
+    let validatorList = [...props.validatorList];
+    validatorList.push(...props.inActiveValidators);
 
     if (props.name === 'Undelegate' || props.name === 'Redelegate') {
-        validatorList = props.delegatedValidatorList;
+        validatorList = [...props.delegatedValidatorList];
     }
 
     return (
@@ -36,42 +37,43 @@ const ValidatorSelectField = (props) => {
                 {variables[props.lang]['select_validator']}
             </MenuItem>
             {validatorList && validatorList.length > 0 &&
-            validatorList.map((item, index) => {
-                const image = item && item.description && item.description.identity &&
-                        props.validatorImages && props.validatorImages.length &&
-                        props.validatorImages.filter((value) => value._id === item.description.identity.toString());
+                validatorList.map((item, index) => {
+                    const image = item && item.description && item.description.identity &&
+                            props.validatorImages && props.validatorImages.length &&
+                            props.validatorImages.filter((value) => value._id === item.description.identity.toString());
 
-                return (
-                    <MenuItem
-                        key={item.key || item.value || item.name || item.type ||
-                            item.operator_address}
-                        value={item.value || item.name || item.type ||
-                            (item.operator_address)}>
-                        {image && image.length && image[0] && image[0].them && image[0].them.length &&
-                            image[0].them[0] && image[0].them[0].pictures && image[0].them[0].pictures.primary &&
-                            image[0].them[0].pictures.primary.url
-                            ? <img
-                                alt={item.description && item.description.moniker}
-                                className="image"
-                                src={image[0].them[0].pictures.primary.url}/>
-                            : item.description && item.description.moniker
-                                ? <span
+                    return (
+                        <MenuItem
+                            key={item.key || item.value || item.name || item.type ||
+                                    item.operator_address}
+                            value={item.value || item.name || item.type ||
+                                    (item.operator_address)}>
+                            {image && image.length && image[0] && image[0].them && image[0].them.length &&
+                                image[0].them[0] && image[0].them[0].pictures && image[0].them[0].pictures.primary &&
+                                image[0].them[0].pictures.primary.url
+                                ? <img
+                                    alt={item.description && item.description.moniker}
                                     className="image"
-                                    style={{ background: colors[index % 6] }}>
-                                    {item.description.moniker[0]}
-                                </span>
-                                : <span className="image" style={{ background: colors[index % 6] }}/>}
-                        {item.name ? item.name : item.type
-                            ? item.name : item.description && item.description.moniker}
-                    </MenuItem>
-                );
-            },
-            )}
+                                    src={image[0].them[0].pictures.primary.url}/>
+                                : item.description && item.description.moniker
+                                    ? <span
+                                        className="image"
+                                        style={{ background: colors[index % 6] }}>
+                                        {item.description.moniker[0]}
+                                    </span>
+                                    : <span className="image" style={{ background: colors[index % 6] }}/>}
+                            {item.name ? item.name : item.type
+                                ? item.name : item.description && item.description.moniker}
+                        </MenuItem>
+                    );
+                },
+                )}
         </SelectField>
     );
 };
 
 ValidatorSelectField.propTypes = {
+    inActiveValidators: PropTypes.array.isRequired,
     items: PropTypes.array.isRequired,
     lang: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
@@ -118,6 +120,7 @@ const stateToProps = (state) => {
         name: state.stake.delegateDialog.name,
         validatorImages: state.stake.validators.images,
         delegatedValidatorList: state.stake.delegatedValidators.list,
+        inActiveValidators: state.stake.inActiveValidators.list,
     };
 };
 
